@@ -1,0 +1,772 @@
+{% extends "admin/base.html" %}
+
+{% block stylesheets %}
+<style>
+
+@media print {
+.only_for_screen {
+	display:none;
+}
+
+.collapsibleList li > input {
+	display:none;
+}
+
+}
+
+@media screen {
+.mytooltip {
+  position: relative;
+}
+
+.only_for_print {
+	display:none;
+}
+
+.mytooltip .mytooltiptext {
+  visibility: hidden;
+  width: 500px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -250px;
+}
+
+.mytooltip:hover .mytooltiptext {
+  visibility: visible;
+}
+
+ul {
+list-style-type: none;
+}
+
+.collapsibleList li > input + * {
+ display: none;
+}
+.collapsibleList li > input:checked + * {
+ display: block;
+ width: 100%
+}
+
+.collapsibleList li > input:checked + ul {
+ display: block;
+}
+.collapsibleList li > input {
+position:absolute;
+left:30px;
+margin-top: 5px
+}
+
+.collapsibleList li li input {
+left: 70px;
+}
+
+.collapsibleList label {
+ cursor: pointer;
+}
+
+}
+
+.ws-progress div{
+white-space: nowrap;
+text-align:center;
+float:left;
+padding: 5px 0;
+overflow:hidden;
+color:white;
+}
+
+.ws-progress{
+  overflow:auto;
+}
+
+.ws-first-attempt-correct-progress{background-color:#228c3a;}
+.ws-correct-progress{background-color:#28a745}
+.ws-incorrect-progress{background-color:#dc3545;}
+.ws-missing-progress{background-color:lightgrey;}
+
+.ws-progress-td{
+padding:initial;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="user-info-modal" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2 class="modal-action text-center w-100">Edit User</h2>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body clearfix">
+				{% include "admin/modals/users/edit.html" %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="user-statistics-modal" class="modal fade">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2 class="modal-action text-center w-100">User Statistics</h2>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body clearfix">
+				{% include "admin/modals/users/statistics.html" %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="user-award-modal" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2 class="modal-action text-center w-100">Award User</h2>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body clearfix">
+				{% include "admin/modals/awards/create.html" %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="user-email-modal" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2 class="modal-action text-center w-100">Email User</h2>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body clearfix">
+				{% include "admin/modals/mail/send.html" %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="user-addresses-modal" class="modal fade">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2 class="modal-action text-center w-100">IP Addresses</h2>
+				<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">&times;</span>
+				</button>
+			</div>
+			<div class="modal-body clearfix">
+				{% include "admin/modals/users/addresses.html" %}
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="jumbotron">
+	<div class="container">
+		<h1 id="team-id" class="text-center p-0 m-0">{{ user.name }}</h1>
+		<div class="mb-2">
+			{% if user.type == 'admin' %}
+				<span class="badge badge-primary">admin</span>
+			{% endif %}
+			{% if user.verified %}
+				<span class="badge badge-success">verified</span>
+			{% endif %}
+			{% if user.hidden %}
+				<span class="badge badge-danger">hidden</span>
+			{% endif %}
+			{% if user.banned %}
+				<span class="badge badge-danger">banned</span>
+			{% endif %}
+		</div>
+
+			{% if user.affiliation %}
+				<h3 class="d-inline-block">
+					<span class="badge badge-primary">{{ user.affiliation }}</span>
+				</h3>
+			{% endif %}
+
+			{% if user.country %}
+				<h3 class="d-inline-block">
+					<span class="badge badge-primary">
+						<i class="flag-{{ user.country.lower() }}"></i>
+						{{ lookup_country_code(user.country) }}
+					</span>
+				</h3>
+			{% endif %}
+
+		<h2 id="team-email" class="text-center">{{ user.email }}</h2>
+		{% if user.oauth_id %}
+			<a href="https://majorleaguecyber.org/u/{{ user.name }}">
+				<h3><span class="badge badge-primary">Official</span></h3>
+			</a>
+		{% endif %}
+
+		{% if user.team_id %}
+			<h2 id="team-acc" class="text-center">
+				<a href="{{ url_for('admin.teams_detail', team_id=user.team_id) }}">
+					{{ user.team.name }}
+				</a>
+			</h2>
+		{% endif %}
+
+		{% for field in user.get_fields(admin=true) %}
+			<h3 class="d-block">
+				{{ field.name }}: {{ field.value }}
+			</h3>
+		{% endfor %}
+
+		<h3 id="team-place" class="text-center">
+			{% if place %}
+				{{ place }}
+				<small>place</small>
+			{% endif %}
+		</h3>
+		<h3 id="team-score" class="text-center">
+			{% if score %}
+				{{ score }}
+				<small>points</small>
+			{% endif %}
+		</h3>
+		<hr class="w-50">
+		<div class="pt-3">
+			<a class="edit-user text-dark">
+				<i class="btn-fa fas fa-user-edit fa-2x px-2" data-toggle="tooltip" data-placement="top" title="Edit User"></i>
+			</a>
+			<a class="statistics-user text-dark">
+				<i class="btn-fa fas fa-chart-pie fa-2x px-2" data-toggle="tooltip" data-placement="top" title="User Statistics"></i>
+			</a>
+			<a class="award-user text-dark">
+				<i class="btn-fa fas fa-trophy fa-2x px-2" data-toggle="tooltip" data-placement="top" title="Award User"></i>
+			</a>
+			<a class="email-user text-dark">
+				<i class="btn-fa fas fa-envelope fa-2x px-2" data-toggle="tooltip" data-placement="top" title="Email User"></i>
+			</a>
+			<a class="delete-user text-dark">
+				<i class="btn-fa fas fa-trash-alt fa-2x px-2" data-toggle="tooltip" data-placement="top" title="Delete User"></i>
+			</a>
+		</div>
+		<div class="pt-3">
+			<a class="addresses-user text-dark">
+				<i class="btn-fa fas fa-network-wired fa-2x px-2" data-toggle="tooltip" data-placement="top" title="IP Addresses"></i>
+			</a>
+			{% if user.website %}
+			<a href="{{ user.website }}" target="_blank" class="text-decoration-none text-dark" rel="noopener">
+				<i class="btn-fa fas fa-external-link-alt fa-2x px-2" data-toggle="tooltip" data-placement="top"
+					title="{{ user.website }}" aria-hidden="true"></i>
+			</a>
+			{% endif %}
+		</div>
+	</div>
+</div>
+
+<div class="container">
+	<nav class="nav nav-tabs nav-fill pt-5" id="myTab" role="tablist">
+
+		<a class="nav-item nav-link active" id="nav-scenarios-tab" data-toggle="tab" href="#nav-scenarios" role="tab"
+		   aria-controls="nav-scenarios" aria-selected="true">Scenarios</a>
+
+		<a class="nav-item nav-link" id="nav-category-stats-tab" data-toggle="tab" href="#nav-category-stats" role="tab"
+		   aria-controls="nav-category-stats" aria-selected="true">Categories</a>
+
+		<a class="nav-item nav-link" id="nav-solves-tab" data-toggle="tab" href="#nav-solves" role="tab"
+		   aria-controls="nav-solves" aria-selected="false">Solves</a>
+
+		<a class="nav-item nav-link" id="nav-wrong-tab" data-toggle="tab" href="#nav-wrong" role="tab"
+		   aria-controls="nav-wrong" aria-selected="false">Fails</a>
+
+		<a class="nav-item nav-link" id="nav-awards-tab" data-toggle="tab" href="#nav-awards" role="tab"
+		   aria-controls="nav-awards" aria-selected="false">Awards</a>
+
+		<a class="nav-item nav-link" id="nav-missing-tab" data-toggle="tab" href="#nav-missing" role="tab"
+		   aria-controls="nav-missing" aria-selected="false">Missing</a>
+
+	</nav>
+
+	<div class="tab-content min-vh-25 pb-5" id="nav-tabContent">
+		<div class="tab-pane fade" id="nav-solves" role="tabpanel" aria-labelledby="nav-solves-tab">
+			<h3 class="text-center pt-5 d-block">Solves</h3>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="float-right pb-3">
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-outline-danger" id="solves-delete-button">
+								<i class="btn-fa fas fa-trash-alt"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table table-striped border">
+					<thead>
+						<tr>
+							<th class="border-right" data-checkbox>
+								<div class="form-check text-center">
+									<input type="checkbox" class="form-check-input" data-checkbox-all>&nbsp;
+								</div>
+							</th>
+							<th class="sort-col text-center"><b>Challenge</b></th>
+							<th class="sort-col text-center"><b>Submitted</b></th>
+							<th class="sort-col text-center"><b>Category</b></th>
+							<th class="sort-col text-center"><b>Value</b></th>
+							<th class="sort-col text-center"><b>Time</b></th>
+						</tr>
+					</thead>
+					<tbody>
+					{% for solve in solves %}
+						<tr class="chal-solve" data-href="{{ url_for("admin.challenges_detail", challenge_id=solve.challenge_id) }}">
+							<td class="border-right" data-checkbox>
+								<div class="form-check text-center">
+									<input type="checkbox" class="form-check-input" value="{{ solve.id }}" data-submission-id="{{ solve.id }}"
+									data-submission-type="{{ solve.type }}"
+									data-submission-challenge="{{ solve.challenge.name }}">&nbsp;
+								</div>
+							</td>
+							<td class="text-center chal" id="{{ solve.challenge_id }}">
+								<a href="{{ url_for("admin.challenges_detail", challenge_id=solve.challenge_id) }}">
+									{{ solve.challenge.name }}
+								</a>
+							</td>
+							<td class="flag" id="{{ solve.id }}"><pre>{{ solve.provided }}</pre></td>
+							<td class="text-center">{{ solve.challenge.category }}</td>
+							<td class="text-center">{{ solve.challenge.value }}</td>
+							<td class="text-center solve-time">
+								<span data-time="{{ solve.date | isoformat }}"></span>
+							</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="nav-wrong" role="tabpanel" aria-labelledby="nav-wrong-tab">
+			<h3 class="text-center pt-5 d-block">Fails</h3>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="float-right pb-3">
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-outline-danger" id="fails-delete-button">
+								<i class="btn-fa fas fa-trash-alt"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table table-striped border">
+						<thead>
+							<tr>
+								<th class="border-right" data-checkbox>
+									<div class="form-check text-center">
+										<input type="checkbox" class="form-check-input" data-checkbox-all>&nbsp;
+									</div>
+								</th>
+								<th class="sort-col text-center"><b>Challenge</b></th>
+								<th class="sort-col text-center"><b>Submitted</b></th>
+								<th class="sort-col text-center"><b>Time</b></th>
+							</tr>
+						</thead>
+						<tbody>
+						{% for fail in fails %}
+							<tr class="chal-wrong" data-href="{{ url_for("admin.challenges_detail", challenge_id=fail.challenge_id) }}">
+								<td class="border-right" data-checkbox>
+									<div class="form-check text-center">
+										<input type="checkbox" class="form-check-input" value="{{ fail.id }}" data-submission-id="{{ fail.id }}"
+										data-submission-type="{{ fail.type }}"
+										data-submission-challenge="{{ fail.challenge.name }}">&nbsp;
+									</div>
+								</td>
+								<td class="text-center chal" id="{{ fail.challenge_id }}">
+									<a href="{{ url_for("admin.challenges_detail", challenge_id=fail.challenge_id) }}">
+										{{ fail.challenge.name }}
+									</a>
+								</td>
+								<td class="flag" id="{{ fail.id }}">
+									<pre>{{ fail.provided }}</pre>
+								</td>
+								<td class="text-center solve-time">
+									<span data-time="{{ fail.date | isoformat }}"></span>
+								</td>
+							</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="nav-awards" role="tabpanel" aria-labelledby="nav-awards-tab">
+			<h3 class="text-center pt-5 d-block">Awards</h3>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="float-right pb-3">
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-outline-danger" id="awards-delete-button">
+								<i class="btn-fa fas fa-trash-alt"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table table-striped border">
+						<thead>
+							<tr>
+								<th class="border-right" data-checkbox>
+									<div class="form-check text-center">
+										<input type="checkbox" class="form-check-input" data-checkbox-all>&nbsp;
+									</div>
+								</th>
+								<th class="sort-col text-center"><b>Name</b></th>
+								<th class="sort-col text-center"><b>Description</b></th>
+								<th class="sort-col text-center"><b>Date</b></th>
+								<th class="sort-col text-center"><b>Value</b></th>
+								<th class="sort-col text-center"><b>Category</b></th>
+								<th class="sort-col text-center"><b>Icon</b></th>
+							</tr>
+						</thead>
+						<tbody id="awards-body">
+						{% for award in awards %}
+							<tr class="award-row">
+								<td class="border-right" data-checkbox>
+									<div class="form-check text-center">
+										<input type="checkbox" class="form-check-input" value="{{ award.id }}" data-award-id="{{ award.id }}" data-award-name="{{ award.name }}">&nbsp;
+									</div>
+								</td>
+								<td class="text-center chal" id="{{ award.id }}">{{ award.name }}</td>
+								<td class=""><pre>{{ award.description }}</pre></td>
+								<td class="text-center solve-time">
+									<span data-time="{{ award.date | isoformat }}"></span>
+								</td>
+								<td class="text-center">{{ award.value }}</td>
+								<td class="text-center">{{ award.category }}</td>
+								<td class="text-center"> <i class="award-icon award-{{ award.icon }}"></i> {{ award.icon }}</td>
+							</tr>
+						{% endfor %}
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="tab-pane fade" id="nav-missing" role="tabpanel" aria-labelledby="nav-missing-tab">
+			<h3 class="text-center pt-5 d-block">Missing</h3>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="float-right pb-3">
+						<div class="btn-group" role="group">
+							<button type="button" class="btn btn-outline-success" id="missing-solve-button">
+								<i class="btn-fa fas fa-check"></i>
+							</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<table class="table table-striped border">
+					<thead>
+						<tr>
+							<th class="border-right" data-checkbox>
+								<div class="form-check text-center">
+									<input type="checkbox" class="form-check-input" data-checkbox-all>&nbsp;
+								</div>
+							</th>
+							<th class="sort-col text-center"><b>Challenge</b></th>
+							<th class="sort-col text-center"><b>Category</b></th>
+							<th class="sort-col text-center"><b>Value</b></th>
+						</tr>
+					</thead>
+					<tbody>
+					{% for challenge in missing %}
+						<tr class="chal-solve" data-href="{{ url_for("admin.challenges_detail", challenge_id=challenge.id) }}">
+							<td class="border-right" data-checkbox>
+								<div class="form-check text-center">
+									<input type="checkbox" class="form-check-input" value="{{ challenge.id }}" data-missing-challenge-id="{{ challenge.id }}"
+									data-missing-challenge-name="{{ challenge.name }}">&nbsp;
+								</div>
+							</td>
+							<td class="text-center chal" id="{{ challenge.id }}">
+								<a href="{{ url_for("admin.challenges_detail", challenge_id=challenge.id) }}">
+									{{ challenge.name }}
+								</a>
+							</td>
+							<td class="text-center">{{ challenge.category }}</td>
+							<td class="text-center">{{ challenge.value }}</td>
+						</tr>
+					{% endfor %}
+					</tbody>
+				</table>
+				</div>
+			</div>
+		</div>
+
+
+
+
+		<div class="tab-pane fade show active" id="nav-scenarios" role="tabpanel" aria-labelledby="nav-scenarios-tab">
+			<h3 class="text-center pt-5 d-block">Scenarios</h3>
+			<div class="row">
+				<div class="col-md-12">
+					<ul class="collapsibleList">
+					{% for scenario in scenarios.keys() %}
+						<li>
+						  <label for="{{scenario}}-checkbox">{{scenario}}</label>
+							<input id="{{scenario}}-checkbox" type="checkbox">
+						  		<ul class="collapsibleList">
+									<li>
+								<label for="{{scenario}}-statistics-checkbox">Statistics</label>
+									<input id="{{scenario}}-statistics-checkbox" type="checkbox">
+										<div class="text-center"><span data-time="{{ scenario_dates[scenario]['start_date'] | isoformat }}"></span> - <span data-time="{{ scenario_dates[scenario]['end_date'] | isoformat }}"></span> ({{scenario_dates[scenario]['time_delta']}})
+											<table class="table table-striped border only_for_screen">
+											<thead>
+												<tr>
+													<th class="sort-col text-center"><b>Category</b></th>
+													{# <th class="sort-col text-center"><b>Percentage</b></th> #}
+													<th colspan="4" class="text-center" style="width:80%;">
+														<div class="ws-progress">
+														<div class="ws-first-attempt-correct-progress" style="width:25%;">First Attempt Correct</div>
+														<div class="ws-correct-progress" style="width:25%;">Correct</div>
+														<div class="ws-incorrect-progress" style="width:25%;">Incorrect</div>
+														<div class="ws-missing-progress" style="width:25%;">Missing</div>
+														</div>
+													</th>
+												</tr>
+											</thead>
+											<tbody>
+												{% for category,stats in stats_by_scenario[scenario].items() %}
+												{% set total_challenges = stats['correct'] + stats['incorrect'] + stats['missing'] + stats['correct_first_time']%}
+												{% set percent_first_correct = ((stats['correct_first_time']/total_challenges)*100) | round(2,'floor') %}
+												{% set percent_correct = ((stats['correct']/total_challenges)*100) | round(2,'floor')  %}
+												{% set percent_incorrect = ((stats['incorrect']/total_challenges)*100) | round(2,'floor') %}
+												{% set total_answered = (percent_first_correct + percent_correct + percent_incorrect) %}
+												{% set percent_missing = 0 if stats['missing']==0 else (100 - total_answered) | round(2,'floor') %}
+												<tr>
+													<td class="text-center">{{ category }}</td>
+													<td colspan="4" class="ws-progress-td class">
+														<div class="ws-progress">
+														<div class="ws-first-attempt-correct-progress" style="width:{{percent_first_correct}}%;" title="{{percent_first_correct}}%">
+															{{stats['correct_first_time']}}</div>
+														<div class="ws-correct-progress mytooltip" style="width:{{percent_correct}}%;" title="{{percent_correct}}%">{{stats['correct']}}</div>
+														<div class="ws-incorrect-progress" style="width:{{percent_incorrect}}%;" title="{{percent_incorrect}}%">
+															{{stats['incorrect']}}</div>
+														<div class="ws-missing-progress" style="width:{{percent_missing}}%;" title="{{percent_missing}}%">
+															{{stats['missing']}}</div>
+														</div>
+												</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+											</div>
+
+											<table class="table table-striped border only_for_print">
+											<thead>
+												<tr>
+													<th class="sort-col text-center"><b>Category</b></th>
+													{# <th class="sort-col text-center"><b>Percentage</b></th> #}
+													<th class="sort-col text-center"><b>First Attempt Correct</b></th>
+													<th class="sort-col text-center"><b>Correct</b></th>
+													<th class="sort-col text-center"><b>Incorrect</b></th>
+													<th class="sort-col text-center"><b>Missing</b></th>
+												</tr>
+											</thead>
+											<tbody>
+												{% for category,stats in stats_by_scenario[scenario].items() %}
+												{% set total_challenges = stats['correct'] + stats['incorrect'] + stats['missing'] + stats['correct_first_time']%}
+												{% set percent_first_correct = ((stats['correct_first_time']/total_challenges)*100) | round(2,'floor') %}
+												{% set percent_correct = ((stats['correct']/total_challenges)*100) | round(2,'floor')  %}
+												{% set percent_incorrect = ((stats['incorrect']/total_challenges)*100) | round(2,'floor') %}
+												{% set total_answered = (percent_first_correct + percent_correct + percent_incorrect) %}
+												{% set percent_missing = 0 if stats['missing']==0 else (100 - total_answered) | round(2,'floor') %}
+												<tr>
+													<td class="text-center">{{ category }}</td>
+													{# <td class="text-center">{{ '%d' % (stats['correct']/(stats['correct']+stats['incorrect']+stats['missing'])*100)}}%</td> #}
+													<td class="text-center">{{ stats['correct_first_time'] }}</td>
+													<td class="text-center">{{ stats['correct'] }}</td>
+													<td class="text-center">{{ stats['incorrect'] }}</td>
+													<td class="text-center">{{ stats['missing'] }}</td>
+												</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+
+
+							<li><label for="{{scenario}}-challenges-checkbox">Challenges</label>
+									<input id="{{scenario}}-challenges-checkbox" type="checkbox">
+									<div>
+								<table class="table table-striped border">
+								<thead>
+									<tr>
+										<th class="sort-col text-center"><b>Challenge</b></th>
+										<th class="text-center"><b>Submissions</b></th>
+										<th class="sort-col text-center"><b>Solved</b></th>
+										<th class="sort-col text-center"><b>Category</b></th>
+										<th class="sort-col text-center"><b>Points</b></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for challenge_id,challenge in scenarios[scenario].items() %}
+									<tr data-href="{{ url_for("admin.challenges_detail", challenge_id=challenge['challenge_id']) }}"{% if challenge['hidden']%} style="text-decoration: line-through;"{% endif %}>
+										<td class="text-center mytooltip">
+											<a href="{{ url_for("admin.challenges_detail", challenge_id=challenge['challenge_id']) }}">
+											{{challenge['name']}}</a></td>
+										<td class="text-center mytooltip"><span class="mytooltiptext">{{challenge['question']}}{%if challenge['correct_answers']%}<br />Correct answer(s): {{challenge['correct_answers']}}{% if challenge['hidden']%}<br />HIDDEN QUESTION{% endif %} {% endif %}</span>
+											{% for submission in challenge['submissions']%}
+											<div{% if submission['correct'] %} style='color:#28A745'{% elif not challenge['missing'] %} style='color:#DC3545'{% endif %}>{{submission['submission']}}</div>
+											{% endfor %}
+										</td>
+										<td class="text-center">{% if challenge['solved'] %} X{%endif%}</td>
+										<td class="text-center">{{challenge['category']}}</td>
+										<td class="text-center">{{challenge['value']}}</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+									</div>
+			</li>
+								</ul>
+							</li>
+					{% endfor %}
+					</ul>
+				</div>
+			</div>
+		</div>
+
+
+<div class="tab-pane fade " id="nav-category-stats" role="tabpanel" aria-labelledby="nav-category-stats-tab">
+			<h3 class="text-center pt-5 d-block">Categories</h3>
+			<div class="row">
+				<div class="col-md-12">
+
+						<table class="table table-striped border only_for_screen">
+								<thead>
+									<tr>
+										<th class="sort-col text-center"><b>Category</b></th>
+										{# <th class="sort-col text-center"><b>Percentage</b></th> #}
+										<th colspan="4" class="text-center" style="width:80%;">
+											<div class="ws-progress">
+											<div class="ws-first-attempt-correct-progress" style="width:25%;">First Attempt Correct</div>
+											<div class="ws-correct-progress" style="width:25%;">Correct</div>
+											<div class="ws-incorrect-progress" style="width:25%;">Incorrect</div>
+											<div class="ws-missing-progress" style="width:25%;">Missing</div>
+											</div>
+										</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for category,stats in stats_by_category.items() %}
+									{% set total_challenges = stats['correct'] + stats['incorrect'] + stats['missing'] + stats['correct_first_time']%}
+									{% set percent_first_correct = ((stats['correct_first_time']/total_challenges)*100) | round(2,'floor') %}
+									{% set percent_correct = ((stats['correct']/total_challenges)*100) | round(2,'floor')  %}
+									{% set percent_incorrect = ((stats['incorrect']/total_challenges)*100) | round(2,'floor') %}
+									{% set total_answered = (percent_first_correct + percent_correct + percent_incorrect) %}
+									{% set percent_missing = 0 if stats['missing']==0 else (100 - total_answered) | round(2,'floor') %}
+									<tr>
+										<td class="text-center">{{ category }}</td>
+										<td colspan="4" class="ws-progress-td class">
+											<div class="ws-progress">
+											<div class="ws-first-attempt-correct-progress" style="width:{{percent_first_correct}}%;" title="{{percent_first_correct}}%">
+												{{stats['correct_first_time']}}</div>
+											<div class="ws-correct-progress mytooltip" style="width:{{percent_correct}}%;" title="{{percent_correct}}%">{{stats['correct']}}</div>
+											<div class="ws-incorrect-progress" style="width:{{percent_incorrect}}%;" title="{{percent_incorrect}}%">
+												{{stats['incorrect']}}</div>
+											<div class="ws-missing-progress" style="width:{{percent_missing}}%;" title="{{percent_missing}}%">
+												{{stats['missing']}}</div>
+											</div>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+
+								<table class="table table-striped border only_for_print">
+								<thead>
+									<tr>
+										<th class="sort-col text-center"><b>Category</b></th>
+										{# <th class="sort-col text-center"><b>Percentage</b></th> #}
+										<th class="sort-col text-center"><b>First Attempt Correct</b></th>
+										<th class="sort-col text-center"><b>Correct</b></th>
+										<th class="sort-col text-center"><b>Incorrect</b></th>
+										<th class="sort-col text-center"><b>Missing</b></th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for category,stats in stats_by_category.items() %}
+									{% set total_challenges = stats['correct'] + stats['incorrect'] + stats['missing'] + stats['correct_first_time']%}
+									{% set percent_first_correct = ((stats['correct_first_time']/total_challenges)*100) | round(2,'floor') %}
+									{% set percent_correct = ((stats['correct']/total_challenges)*100) | round(2,'floor')  %}
+									{% set percent_incorrect = ((stats['incorrect']/total_challenges)*100) | round(2,'floor') %}
+									{% set total_answered = (percent_first_correct + percent_correct + percent_incorrect) %}
+									{% set percent_missing = 0 if stats['missing']==0 else (100 - total_answered) | round(2,'floor') %}
+									<tr>
+										<td class="text-center">{{ category }}</td>
+										{# <td class="text-center">{{ '%d' % (stats['correct']/(stats['correct']+stats['incorrect']+stats['missing'])*100)}}%</td> #}
+										<td class="text-center">{{ stats['correct_first_time'] }}</td>
+										<td class="text-center">{{ stats['correct'] }}</td>
+										<td class="text-center">{{ stats['incorrect'] }}</td>
+										<td class="text-center">{{ stats['missing'] }}</td>
+									</tr>
+									{% endfor %}
+								</tbody>
+							</table>
+				</div>
+			</div>
+		</div>
+
+
+
+
+
+	</div>
+
+	<div class="row min-vh-25 pt-5">
+		<div class="col-md-10 offset-md-1">
+			<div id="comment-box">
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+var USER_ID = {{ user.id }};
+var USER_NAME = {{ user.name | tojson }};
+var TEAM_ID = {{ user.team_id | tojson }};
+var stats_data = {{ {
+	'type': 'user',
+	'id': user.id,
+	'name': user.name,
+	'account_id': user.id,
+} | tojson }};
+</script>
+<script defer src="{{ url_for('views.themes', theme='admin', path='js/echarts.bundle.js') }}"></script>
+<script defer src="{{ url_for('views.themes', theme='admin', path='js/graphs.js') }}"></script>
+{% endblock %}
+
+{% block entrypoint %}
+	<script defer src="{{ url_for('views.themes', theme='admin', path='js/pages/user.js') }}"></script>
+{% endblock %}
