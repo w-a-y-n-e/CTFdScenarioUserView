@@ -560,7 +560,7 @@ padding:initial;
 												{% set percent_incorrect = ((stats['incorrect']/total_challenges)*100) | round(2,'floor') %}
 												{% set total_answered = (percent_first_correct + percent_correct + percent_incorrect) %}
 												{% set percent_missing = 0 if stats['missing']==0 else (100 - total_answered) | round(2,'floor') %}
-												{% set overall_percent_correct = (percent_correct * 0.4 + percent_first_correct * 0.6)/100 %}
+												{% set overall_percent_correct = (percent_correct + percent_first_correct)/100 %}
 												<tr>
 													<td class="text-center">{{ category }}</td>
 													<td class="ws-progress-td class">
@@ -681,7 +681,7 @@ padding:initial;
 									{% set percent_incorrect = ((stats['incorrect']/total_challenges)*100) | round(2,'floor') %}
 									{% set total_answered = (percent_first_correct + percent_correct + percent_incorrect) %}
 									{% set percent_missing = 0 if stats['missing']==0 else (100 - total_answered) | round(2,'floor') %}
-									{% set overall_percent_correct = (percent_correct * 0.4 + percent_first_correct * 0.6)/100 %}
+									{% set overall_percent_correct = (percent_correct + percent_first_correct)/100 %}
 									<tr>
 										<td class="text-center">{{ category }}</td>
 										<td class="ws-progress-td class">

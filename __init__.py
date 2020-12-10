@@ -72,12 +72,12 @@ def get_scenario_statistics(scenarios):
 
     for scenario,challenges in scenarios.items():
         for challenge,challenge_details in challenges.items():
-            if challenge_details['solved']:
+            if challenge_details['correct_first_time']:
+                by_category[challenge_details['category']].update(['correct_first_time'])
+                by_scenario[scenario][challenge_details['category']].update(['correct_first_time'])
+            elif challenge_details['solved']:
                 by_category[challenge_details['category']].update(['correct'])
                 by_scenario[scenario][challenge_details['category']].update(['correct'])
-                if challenge_details['correct_first_time']:
-                    by_category[challenge_details['category']].update(['correct_first_time'])
-                    by_scenario[scenario][challenge_details['category']].update(['correct_first_time'])
             elif not challenge_details['solved'] and not challenge_details['missing']:
                 by_category[challenge_details['category']].update(['incorrect'])
                 by_scenario[scenario][challenge_details['category']].update(['incorrect'])
