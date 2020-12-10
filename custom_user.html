@@ -82,10 +82,6 @@ overflow:hidden;
 color:white;
 }
 
-.ws-progress{
-  overflow:auto;
-}
-
 .ws-first-attempt-correct-progress{background-color:#228c3a;}
 .ws-correct-progress{background-color:#28a745}
 .ws-incorrect-progress{background-color:#dc3545;}
@@ -546,7 +542,7 @@ padding:initial;
 												<tr>
 													<th class="sort-col text-center"><b>Category</b></th>
 													{# <th class="sort-col text-center"><b>Percentage</b></th> #}
-													<th colspan="4" class="text-center" style="width:80%;">
+													<th class="text-center sort-col" style="width:80%;">
 														<div class="ws-progress">
 														<div class="ws-first-attempt-correct-progress" style="width:25%;">First Attempt Correct</div>
 														<div class="ws-correct-progress" style="width:25%;">Correct</div>
@@ -564,9 +560,11 @@ padding:initial;
 												{% set percent_incorrect = ((stats['incorrect']/total_challenges)*100) | round(2,'floor') %}
 												{% set total_answered = (percent_first_correct + percent_correct + percent_incorrect) %}
 												{% set percent_missing = 0 if stats['missing']==0 else (100 - total_answered) | round(2,'floor') %}
+												{% set overall_percent_correct = (percent_correct * 0.4 + percent_first_correct * 0.6)/100 %}
 												<tr>
 													<td class="text-center">{{ category }}</td>
-													<td colspan="4" class="ws-progress-td class">
+													<td class="ws-progress-td class">
+														<span style="display:none;">{{ overall_percent_correct }}</span>
 														<div class="ws-progress">
 														<div class="ws-first-attempt-correct-progress" style="width:{{percent_first_correct}}%;" title="{{percent_first_correct}}%">
 															{{stats['correct_first_time']}}</div>
@@ -586,7 +584,6 @@ padding:initial;
 											<thead>
 												<tr>
 													<th class="sort-col text-center"><b>Category</b></th>
-													{# <th class="sort-col text-center"><b>Percentage</b></th> #}
 													<th class="sort-col text-center"><b>First Attempt Correct</b></th>
 													<th class="sort-col text-center"><b>Correct</b></th>
 													<th class="sort-col text-center"><b>Incorrect</b></th>
@@ -666,7 +663,7 @@ padding:initial;
 									<tr>
 										<th class="sort-col text-center"><b>Category</b></th>
 										{# <th class="sort-col text-center"><b>Percentage</b></th> #}
-										<th colspan="4" class="text-center" style="width:80%;">
+										<th class="text-center sort-col" style="width:80%;">
 											<div class="ws-progress">
 											<div class="ws-first-attempt-correct-progress" style="width:25%;">First Attempt Correct</div>
 											<div class="ws-correct-progress" style="width:25%;">Correct</div>
@@ -684,9 +681,11 @@ padding:initial;
 									{% set percent_incorrect = ((stats['incorrect']/total_challenges)*100) | round(2,'floor') %}
 									{% set total_answered = (percent_first_correct + percent_correct + percent_incorrect) %}
 									{% set percent_missing = 0 if stats['missing']==0 else (100 - total_answered) | round(2,'floor') %}
+									{% set overall_percent_correct = (percent_correct * 0.4 + percent_first_correct * 0.6)/100 %}
 									<tr>
 										<td class="text-center">{{ category }}</td>
-										<td colspan="4" class="ws-progress-td class">
+										<td class="ws-progress-td class">
+											<span style="display:none;">{{ overall_percent_correct }}</span>
 											<div class="ws-progress">
 											<div class="ws-first-attempt-correct-progress" style="width:{{percent_first_correct}}%;" title="{{percent_first_correct}}%">
 												{{stats['correct_first_time']}}</div>
