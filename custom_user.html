@@ -635,7 +635,7 @@ padding:initial;
 											<div{% if submission['correct'] %} style='color:#28A745'{% elif not challenge['missing'] %} style='color:#DC3545'{% endif %}>{{submission['submission']}}</div>
 											{% endfor %}
 										</td>
-										<td class="text-center">{% if challenge['solved'] %} X{%endif%}</td>
+										<td class="text-center">{% if challenge['solved'] %} &check;{%endif%}</td>
 										<td class="text-center">{{challenge['category']}}</td>
 										<td class="text-center">{{challenge['value']}}</td>
 									</tr>
