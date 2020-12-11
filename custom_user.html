@@ -82,10 +82,14 @@ overflow:hidden;
 color:white;
 }
 
-.ws-first-attempt-correct-progress{background-color:#228c3a;}
-.ws-correct-progress{background-color:#28a745}
-.ws-incorrect-progress{background-color:#dc3545;}
-.ws-missing-progress{background-color:lightgrey;}
+.ws-dark-green-bg{background-color:#228c3a;}
+.ws-green-bg{background-color:#28a745}
+.ws-red-bg{background-color:#dc3545;}
+.ws-grey-bg{background-color:lightgrey;}
+
+.ws-dark-green-fg{color:#228c3a;}
+.ws-green-fg{color:#28a745}
+.ws-red-fg{color:#dc3545;}
 
 .ws-progress-td{
 padding:initial;
@@ -544,10 +548,10 @@ padding:initial;
 													{# <th class="sort-col text-center"><b>Percentage</b></th> #}
 													<th class="text-center sort-col" style="width:80%;">
 														<div class="ws-progress">
-														<div class="ws-first-attempt-correct-progress" style="width:25%;">First Attempt Correct</div>
-														<div class="ws-correct-progress" style="width:25%;">Correct</div>
-														<div class="ws-incorrect-progress" style="width:25%;">Incorrect</div>
-														<div class="ws-missing-progress" style="width:25%;">Missing</div>
+														<div class="ws-dark-green-bg" style="width:25%;">First Attempt Correct</div>
+														<div class="ws-green-bg" style="width:25%;">Correct</div>
+														<div class="ws-red-bg" style="width:25%;">Incorrect</div>
+														<div class="ws-grey-bg" style="width:25%;">Missing</div>
 														</div>
 													</th>
 												</tr>
@@ -566,12 +570,12 @@ padding:initial;
 													<td class="ws-progress-td class">
 														<span style="display:none;">{{ overall_percent_correct }}</span>
 														<div class="ws-progress">
-														<div class="ws-first-attempt-correct-progress" style="width:{{percent_first_correct}}%;" title="{{percent_first_correct}}%">
+														<div class="ws-dark-green-bg" style="width:{{percent_first_correct}}%;" title="{{percent_first_correct}}%">
 															{{stats['correct_first_time']}}</div>
-														<div class="ws-correct-progress mytooltip" style="width:{{percent_correct}}%;" title="{{percent_correct}}%">{{stats['correct']}}</div>
-														<div class="ws-incorrect-progress" style="width:{{percent_incorrect}}%;" title="{{percent_incorrect}}%">
+														<div class="ws-green-bg mytooltip" style="width:{{percent_correct}}%;" title="{{percent_correct}}%">{{stats['correct']}}</div>
+														<div class="ws-red-bg" style="width:{{percent_incorrect}}%;" title="{{percent_incorrect}}%">
 															{{stats['incorrect']}}</div>
-														<div class="ws-missing-progress" style="width:{{percent_missing}}%;" title="{{percent_missing}}%">
+														<div class="ws-grey-bg" style="width:{{percent_missing}}%;" title="{{percent_missing}}%">
 															{{stats['missing']}}</div>
 														</div>
 												</tr>
@@ -632,10 +636,27 @@ padding:initial;
 											{{challenge['name']}}</a></td>
 										<td class="text-center mytooltip"><span class="mytooltiptext">{{challenge['question']}}{%if challenge['correct_answers']%}<br />Correct answer(s): {{challenge['correct_answers']}}{% if challenge['hidden']%}<br />HIDDEN QUESTION{% endif %} {% endif %}</span>
 											{% for submission in challenge['submissions']%}
-											<div{% if submission['correct'] %} style='color:#28A745'{% elif not challenge['missing'] %} style='color:#DC3545'{% endif %}>{{submission['submission']}}</div>
+											<div{% if submission['correct'] %} style='font-weight: bold;'{% elif not challenge['missing'] %} style='font-weight: normal;'{% endif %}>{{submission['submission']}}</div>
 											{% endfor %}
 										</td>
-										<td class="text-center">{% if challenge['solved'] %} &check;{%endif%}</td>
+										<td class="text-center">{% if challenge['solved'] %}{% if challenge['zscore'] <= 0.5 and challenge['zscore'] >= -0.5 %}
+											<span style="display:none">0.2</span><div><span class="ws-green-fg mytooltip">Average
+											{% endif %}{% if challenge['zscore'] < -0.5 %}
+											<span style="display:none">0.3</span><div><span class="ws-dark-green-fg mytooltip">Above Average
+											{% endif %}{% if challenge['zscore'] > 0.5 %}
+											<span style="display:none">0.1</span><div class="ws-red-fg mytooltip">Below Average
+											{% endif %}
+
+											<span class="mytooltiptext">
+												Z Score: {{challenge['zscore']}}
+												<br />
+												Average: {{challenge['average']}}
+												<br />
+												Standard Deviation: {{challenge['stdev']}}
+											</span>
+												</div>
+											{%endif%}
+										</td>
 										<td class="text-center">{{challenge['category']}}</td>
 										<td class="text-center">{{challenge['value']}}</td>
 									</tr>
@@ -665,10 +686,10 @@ padding:initial;
 										{# <th class="sort-col text-center"><b>Percentage</b></th> #}
 										<th class="text-center sort-col" style="width:80%;">
 											<div class="ws-progress">
-											<div class="ws-first-attempt-correct-progress" style="width:25%;">First Attempt Correct</div>
-											<div class="ws-correct-progress" style="width:25%;">Correct</div>
-											<div class="ws-incorrect-progress" style="width:25%;">Incorrect</div>
-											<div class="ws-missing-progress" style="width:25%;">Missing</div>
+											<div class="ws-dark-green-bg" style="width:25%;">First Attempt Correct</div>
+											<div class="ws-green-bg" style="width:25%;">Correct</div>
+											<div class="ws-red-bg" style="width:25%;">Incorrect</div>
+											<div class="ws-grey-bg" style="width:25%;">Missing</div>
 											</div>
 										</th>
 									</tr>
@@ -687,12 +708,12 @@ padding:initial;
 										<td class="ws-progress-td class">
 											<span style="display:none;">{{ overall_percent_correct }}</span>
 											<div class="ws-progress">
-											<div class="ws-first-attempt-correct-progress" style="width:{{percent_first_correct}}%;" title="{{percent_first_correct}}%">
+											<div class="ws-dark-green-bg" style="width:{{percent_first_correct}}%;" title="{{percent_first_correct}}%">
 												{{stats['correct_first_time']}}</div>
-											<div class="ws-correct-progress mytooltip" style="width:{{percent_correct}}%;" title="{{percent_correct}}%">{{stats['correct']}}</div>
-											<div class="ws-incorrect-progress" style="width:{{percent_incorrect}}%;" title="{{percent_incorrect}}%">
+											<div class="ws-green-bg mytooltip" style="width:{{percent_correct}}%;" title="{{percent_correct}}%">{{stats['correct']}}</div>
+											<div class="ws-red-bg" style="width:{{percent_incorrect}}%;" title="{{percent_incorrect}}%">
 												{{stats['incorrect']}}</div>
-											<div class="ws-missing-progress" style="width:{{percent_missing}}%;" title="{{percent_missing}}%">
+											<div class="ws-grey-bg" style="width:{{percent_missing}}%;" title="{{percent_missing}}%">
 												{{stats['missing']}}</div>
 											</div>
 									</tr>

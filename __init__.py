@@ -9,6 +9,8 @@ from CTFd.utils.modes import TEAMS_MODE
 from CTFd.plugins import register_plugin_assets_directory
 from CTFd.utils.plugins import override_template
 import os
+from collections import defaultdict,Counter
+from statistics import pstdev
 
 def process_submission(s, sc, sd, correct):
     try:
@@ -66,7 +68,7 @@ def process_submission(s, sc, sd, correct):
         pass
 
 def get_scenario_statistics(scenarios):
-    from collections import defaultdict,Counter
+
     by_category = defaultdict(lambda: Counter({'correct': 0, 'incorrect': 0, 'missing': 0, 'correct_first_time': 0}))
     by_scenario = defaultdict(lambda: defaultdict(lambda: Counter({'correct': 0, 'incorrect': 0, 'missing': 0, 'correct_first_time': 0})))
 
@@ -104,9 +106,41 @@ def get_scenarios(fails, solves, missing):
 @admins_only
 def custom_users_detail(user_id):
     # Get user object
-    user = Users.query.filter_by(id=user_id).first_or_404()
+    scenarios=dict()
+    scenario_dates=dict()
+    by_scenario=dict()
+    by_category=dict()
 
-    # Get the user's solves
+    all_users = (Users.query.filter_by(banned=False, hidden=False))
+    specified_user = Users.query.filter_by(id=user_id).first_or_404()
+    for user in all_users:
+        #user = Users.query.filter_by(id=user_id).first_or_404()
+        # Get the user's solves
+        solves = user.get_solves(admin=True)
+        all_solves = solves
+
+        solve_ids = [s.challenge_id for s in all_solves]
+        missing = Challenges.query.filter(not_(Challenges.id.in_(solve_ids))).all()
+
+        # Get IP addresses that the User has used
+        addrs = (
+            Tracking.query.filter_by(user_id=user_id).order_by(Tracking.date.desc()).all()
+        )
+
+        # Get Fails
+        fails = user.get_fails(admin=True)
+
+        # Get Awards
+        awards = user.get_awards(admin=True)
+
+        # Get user properties
+        score = user.get_score(admin=True)
+        place = user.get_place(admin=True)
+
+        scenarios[user], scenario_dates[user] = get_scenarios(fails, solves, missing)
+        by_scenario[user],by_category[user]=get_scenario_statistics(scenarios[user])
+
+    user=specified_user
     solves = user.get_solves(admin=True)
 
     # Get challenges that the user is missing
@@ -136,8 +170,33 @@ def custom_users_detail(user_id):
     score = user.get_score(admin=True)
     place = user.get_place(admin=True)
 
-    scenarios, scenario_dates = get_scenarios(fails, solves, missing)
-    by_scenario,by_category=get_scenario_statistics(scenarios)
+    scenarios[user], scenario_dates[user] = get_scenarios(fails, solves, missing)
+    by_scenario[user], by_category[user] = get_scenario_statistics(scenarios[user])
+
+    challenge_to_list_of_number_of_submissions = defaultdict(list)
+
+    for person,person_scenario in scenarios.items():
+        for scenario_name,s_item in person_scenario.items():
+            for challenge in s_item.values():
+                if challenge['solved']:
+                    challenge_to_list_of_number_of_submissions[challenge['challenge_id']].append(len(challenge['submissions']))
+
+                else:
+                    challenge_to_list_of_number_of_submissions[challenge['challenge_id']].append(len(challenge['submissions'])+1)
+
+    for scenario_name,s_item in scenarios[specified_user].items():
+        for challenge_id,challenge in s_item.items():
+            challenge['average']=sum(challenge_to_list_of_number_of_submissions[challenge['challenge_id']])/len(challenge_to_list_of_number_of_submissions[challenge['challenge_id']])
+            challenge['stdev'] = pstdev(challenge_to_list_of_number_of_submissions[challenge['challenge_id']])
+            if challenge['stdev']!=0 and challenge['solved']==True:
+                challenge['zscore'] = (len(challenge['submissions'])-challenge['average'])/challenge['stdev']
+            elif challenge['solved']==True:
+                challenge['zscore'] = 0
+            else:
+                challenge['zscore'] = None
+                #might not really be the zscore but that is okay
+
+    #print (scenarios[specified_user])
 
     return render_template(
         "admin/users/user.html",
@@ -149,10 +208,10 @@ def custom_users_detail(user_id):
         place=place,
         fails=fails,
         awards=awards,
-        scenarios=scenarios,
-        scenario_dates=scenario_dates,
-        stats_by_scenario=by_scenario,
-        stats_by_category=by_category,
+        scenarios=scenarios[specified_user],
+        scenario_dates=scenario_dates[specified_user],
+        stats_by_scenario=by_scenario[specified_user],
+        stats_by_category=by_category[specified_user],
     )
 
 
