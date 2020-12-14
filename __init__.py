@@ -171,7 +171,6 @@ def custom_users_detail(user_id):
     place = user.get_place(admin=True)
 
     scenarios[user], scenario_dates[user] = get_scenarios(fails, solves, missing)
-    by_scenario[user], by_category[user] = get_scenario_statistics(scenarios[user])
 
     challenge_to_list_of_number_of_submissions = defaultdict(list)
 
@@ -188,13 +187,18 @@ def custom_users_detail(user_id):
         for challenge_id,challenge in s_item.items():
             challenge['average']=sum(challenge_to_list_of_number_of_submissions[challenge['challenge_id']])/len(challenge_to_list_of_number_of_submissions[challenge['challenge_id']])
             challenge['stdev'] = pstdev(challenge_to_list_of_number_of_submissions[challenge['challenge_id']])
-            if challenge['stdev']!=0 and challenge['solved']==True:
-                challenge['zscore'] = (len(challenge['submissions'])-challenge['average'])/challenge['stdev']
-            elif challenge['solved']==True:
-                challenge['zscore'] = 0
-            else:
-                challenge['zscore'] = None
-                #might not really be the zscore but that is okay
+            if challenge['solved'] and not challenge['missing']: # If there are attempts and if it is solved
+                if challenge['stdev']!=0:
+                    challenge['zscore'] = (len(challenge['submissions'])-challenge['average'])/challenge['stdev']
+                else:
+                    challenge['zscore'] = 0 # This is the case if all users are the average. This makes this user average.
+            elif not challenge['solved'] and not challenge['missing']: # If there are attempts and it is not solved
+                if challenge['stdev']!=0:
+                    challenge['zscore'] = ((challenge['average']+2)-challenge['average'])/challenge['stdev']
+                else:
+                    challenge['zscore'] = 3 # This is the case if all users are the average. This makes this user average.
+
+    by_scenario[user], by_category[user] = get_scenario_statistics(scenarios[user])
 
     #print (scenarios[specified_user])
 

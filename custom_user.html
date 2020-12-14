@@ -624,6 +624,7 @@ padding:initial;
 										<th class="sort-col text-center"><b>Challenge</b></th>
 										<th class="text-center"><b>Submissions</b></th>
 										<th class="sort-col text-center"><b>Solved</b></th>
+										<th class="sort-col text-center"><b>Performance</b></th>
 										<th class="sort-col text-center"><b>Category</b></th>
 										<th class="sort-col text-center"><b>Points</b></th>
 									</tr>
@@ -639,7 +640,8 @@ padding:initial;
 											<div{% if submission['correct'] %} style='font-weight: bold;'{% elif not challenge['missing'] %} style='font-weight: normal;'{% endif %}>{{submission['submission']}}</div>
 											{% endfor %}
 										</td>
-										<td class="text-center">{% if challenge['solved'] %}{% if challenge['zscore'] <= 0.5 and challenge['zscore'] >= -0.5 %}
+										<td>{% if challenge['solved'] %}&check;{% endif %}</td>
+										<td class="text-center">{% if not challenge['missing'] %}{% if challenge['zscore'] <= 0.5 and challenge['zscore'] >= -0.5 %}
 											<span style="display:none">0.2</span><div><span class="ws-green-fg mytooltip">Average
 											{% endif %}{% if challenge['zscore'] < -0.5 %}
 											<span style="display:none">0.3</span><div><span class="ws-dark-green-fg mytooltip">Above Average
