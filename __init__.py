@@ -182,7 +182,9 @@ def custom_users_detail(user_id):
 
                 else:
                     challenge_to_list_of_number_of_submissions[challenge['challenge_id']].append(len(challenge['submissions'])+1)
-
+    scenario_to_list_of_zscores=defaultdict(list)
+    scenario_category_to_list_of_zscores=defaultdict(lambda: defaultdict(list))
+    category_to_list_of_zscores=defaultdict(list)
     for scenario_name,s_item in scenarios[specified_user].items():
         for challenge_id,challenge in s_item.items():
             challenge['average']=sum(challenge_to_list_of_number_of_submissions[challenge['challenge_id']])/len(challenge_to_list_of_number_of_submissions[challenge['challenge_id']])
@@ -191,12 +193,31 @@ def custom_users_detail(user_id):
                 if challenge['stdev']!=0:
                     challenge['zscore'] = (len(challenge['submissions'])-challenge['average'])/challenge['stdev']
                 else:
-                    challenge['zscore'] = 0 # This is the case if all users are the average. This makes this user average.
+                    challenge['zscore'] = 0  # This is the case if all users are the average. This makes this user average.
             elif not challenge['solved'] and not challenge['missing']: # If there are attempts and it is not solved
                 if challenge['stdev']!=0:
                     challenge['zscore'] = ((challenge['average']+2)-challenge['average'])/challenge['stdev']
                 else:
-                    challenge['zscore'] = 3 # This is the case if all users are the average. This makes this user average.
+                    challenge['zscore'] = 3  # This is the case if all users are the average. This makes this user below average
+            if not challenge['missing']:
+                scenario_to_list_of_zscores[scenario_name].append(challenge['zscore'])
+                scenario_category_to_list_of_zscores[scenario_name][challenge['category']].append(challenge['zscore'])
+                category_to_list_of_zscores[challenge['category']].append(challenge['zscore'])
+            else:
+                scenario_to_list_of_zscores[scenario_name].append(3)
+                scenario_category_to_list_of_zscores[scenario_name][challenge['category']].append(3)
+                category_to_list_of_zscores[challenge['category']].append(3)
+
+    scenario_category_avg_zscore=defaultdict(dict)
+
+    for scenario_name, categories in scenario_category_to_list_of_zscores.items():
+        for category_name, category_zscores in categories.items():
+            scenario_category_avg_zscore[scenario_name][category_name]=sum(category_zscores)/len(category_zscores)
+
+    scenario_avg_zscore={s: sum(v)/len(v) for (s,v) in scenario_to_list_of_zscores.items()}
+    category_avg_zscore = {c: sum(v) / len(v) for (c, v) in category_to_list_of_zscores.items()}
+    print(scenario_category_avg_zscore)
+    print(scenario_avg_zscore)
 
     by_scenario[user], by_category[user] = get_scenario_statistics(scenarios[user])
 
@@ -216,6 +237,9 @@ def custom_users_detail(user_id):
         scenario_dates=scenario_dates[specified_user],
         stats_by_scenario=by_scenario[specified_user],
         stats_by_category=by_category[specified_user],
+        scenario_category_avg_zscore=scenario_category_avg_zscore,
+        scenario_avg_zscore=scenario_avg_zscore,
+        category_avg_zscore=category_avg_zscore
     )
 
 

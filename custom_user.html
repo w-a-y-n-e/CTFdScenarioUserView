@@ -1,6 +1,7 @@
 {% extends "admin/base.html" %}
 
 {% block stylesheets %}
+
 <style>
 
 @media print {
@@ -99,6 +100,12 @@ padding:initial;
 {% endblock %}
 
 {% block content %}
+
+{% macro span_for_sort(name) -%}
+<span style="display:none">{{(4+name)|round(1)}}</span>
+{%- endmacro %}
+
+{{ span_for_sort(3) }}
 <div id="user-info-modal" class="modal fade">
 	<div class="modal-dialog">
 		<div class="modal-content">
@@ -545,7 +552,6 @@ padding:initial;
 											<thead>
 												<tr>
 													<th class="sort-col text-center"><b>Category</b></th>
-													{# <th class="sort-col text-center"><b>Percentage</b></th> #}
 													<th class="text-center sort-col" style="width:80%;">
 														<div class="ws-progress">
 														<div class="ws-dark-green-bg" style="width:25%;">First Attempt Correct</div>
@@ -554,6 +560,7 @@ padding:initial;
 														<div class="ws-grey-bg" style="width:25%;">Missing</div>
 														</div>
 													</th>
+													<th class="text-center sort-col">Performance</th>
 												</tr>
 											</thead>
 											<tbody>
@@ -578,6 +585,16 @@ padding:initial;
 														<div class="ws-grey-bg" style="width:{{percent_missing}}%;" title="{{percent_missing}}%">
 															{{stats['missing']}}</div>
 														</div>
+													<td><span style="display:none">{{(4+scenario_category_avg_zscore[scenario][category])|round(1)}}</span>{% if scenario_category_avg_zscore[scenario][category] <= 0.5 and scenario_category_avg_zscore[scenario][category] >= -0.5 %}
+											<div><span class="ws-green-fg mytooltip">Average
+											{% endif %}{% if scenario_category_avg_zscore[scenario][category] < -0.5 %}
+											<div><span class="ws-dark-green-fg mytooltip">Above Average
+											{% endif %}{% if scenario_category_avg_zscore[scenario][category] > 0.5 %}
+											<div class="ws-red-fg mytooltip">Below Average
+											{% endif %}<span class="mytooltiptext"><br />
+												Average Z Score: {{scenario_category_avg_zscore[scenario][category]}}
+											</span>
+												</div></td>
 												</tr>
 												{% endfor %}
 											</tbody>
@@ -592,6 +609,7 @@ padding:initial;
 													<th class="sort-col text-center"><b>Correct</b></th>
 													<th class="sort-col text-center"><b>Incorrect</b></th>
 													<th class="sort-col text-center"><b>Missing</b></th>
+													<th class="sort-col text-center"><b>Performance</b></th>
 												</tr>
 											</thead>
 											<tbody>
@@ -609,6 +627,16 @@ padding:initial;
 													<td class="text-center">{{ stats['correct'] }}</td>
 													<td class="text-center">{{ stats['incorrect'] }}</td>
 													<td class="text-center">{{ stats['missing'] }}</td>
+													<td>{{span_for_sort(scenario_category_avg_zscore[scenario][category])}}{% if scenario_category_avg_zscore[scenario][category] <= 0.5 and scenario_category_avg_zscore[scenario][category] >= -0.5 %}
+											<div><span class="ws-green-fg mytooltip">Average
+											{% endif %}{% if scenario_category_avg_zscore[scenario][category] < -0.5 %}
+											<div><span class="ws-dark-green-fg mytooltip">Above Average
+											{% endif %}{% if scenario_category_avg_zscore[scenario][category] > 0.5 %}
+											<div class="ws-red-fg mytooltip">Below Average
+											{% endif %}<span class="mytooltiptext">
+												<br />Average Z Score: {{scenario_category_avg_zscore[scenario][category]}}
+											</span>
+												</div></td>
 												</tr>
 												{% endfor %}
 											</tbody>
@@ -641,14 +669,14 @@ padding:initial;
 											{% endfor %}
 										</td>
 										<td>{% if challenge['solved'] %}&check;{% endif %}</td>
-										<td class="text-center">{% if not challenge['missing'] %}{% if challenge['zscore'] <= 0.5 and challenge['zscore'] >= -0.5 %}
-											<span style="display:none">0.2</span><div><span class="ws-green-fg mytooltip">Average
+										<td class="text-center">{% if not challenge['missing'] %}{{span_for_sort(challenge['zscore'])}}{% if challenge['zscore'] <= 0.5 and challenge['zscore'] >= -0.5 %}
+											<div><span class="ws-green-fg mytooltip">Average
 											{% endif %}{% if challenge['zscore'] < -0.5 %}
-											<span style="display:none">0.3</span><div><span class="ws-dark-green-fg mytooltip">Above Average
+											<div><span class="ws-dark-green-fg mytooltip">Above Average
 											{% endif %}{% if challenge['zscore'] > 0.5 %}
-											<span style="display:none">0.1</span><div class="ws-red-fg mytooltip">Below Average
+											<div class="ws-red-fg mytooltip">Below Average
 											{% endif %}
-
+											<br />
 											<span class="mytooltiptext">
 												Z Score: {{challenge['zscore']}}
 												<br />
@@ -694,6 +722,7 @@ padding:initial;
 											<div class="ws-grey-bg" style="width:25%;">Missing</div>
 											</div>
 										</th>
+										<th class="sort-col text-center">Performance</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -718,6 +747,16 @@ padding:initial;
 											<div class="ws-grey-bg" style="width:{{percent_missing}}%;" title="{{percent_missing}}%">
 												{{stats['missing']}}</div>
 											</div>
+										<td>{{span_for_sort(category_avg_zscore[category])}}{% if category_avg_zscore[category] <= 0.5 and category_avg_zscore[category] >= -0.5 %}
+											<div><span class="ws-green-fg mytooltip">Average
+											{% endif %}{% if category_avg_zscore[category] < -0.5 %}
+											<div><span class="ws-dark-green-fg mytooltip">Above Average
+											{% endif %}{% if category_avg_zscore[category] > 0.5 %}
+											<div class="ws-red-fg mytooltip">Below Average
+											{% endif %}<br /><span class="mytooltiptext">
+												Average Z Score: {{category_avg_zscore[category]|round(1)}}
+											</span>
+												</div></td>
 									</tr>
 									{% endfor %}
 								</tbody>
@@ -732,6 +771,7 @@ padding:initial;
 										<th class="sort-col text-center"><b>Correct</b></th>
 										<th class="sort-col text-center"><b>Incorrect</b></th>
 										<th class="sort-col text-center"><b>Missing</b></th>
+										<th class="sort-col text-center"><b>Performance</b></th>
 									</tr>
 								</thead>
 								<tbody>
@@ -749,6 +789,16 @@ padding:initial;
 										<td class="text-center">{{ stats['correct'] }}</td>
 										<td class="text-center">{{ stats['incorrect'] }}</td>
 										<td class="text-center">{{ stats['missing'] }}</td>
+										<td>{{span_for_sort(category_avg_zscore[category])}}{% if category_avg_zscore[category] <= 0.5 and category_avg_zscore[category] >= -0.5 %}
+											<div><span class="ws-green-fg mytooltip">Average
+											{% endif %}{% if category_avg_zscore[category] < -0.5 %}
+											<div><span class="ws-dark-green-fg mytooltip">Above Average
+											{% endif %}{% if category_avg_zscore[category] > 0.5 %}
+											<div class="ws-red-fg mytooltip">Below Average
+											{% endif %}<span class="mytooltiptext"><br />
+												Average Z Score: {{category_avg_zscore[category]}}
+											</span>
+												</div></td>
 									</tr>
 									{% endfor %}
 								</tbody>
