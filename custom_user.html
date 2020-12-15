@@ -26,7 +26,6 @@
 
 .mytooltip .mytooltiptext {
   visibility: hidden;
-  width: 500px;
   background-color: black;
   color: #fff;
   text-align: center;
@@ -36,6 +35,15 @@
   z-index: 1;
   bottom: 100%;
   left: 50%;
+
+}
+
+.narrowtooltiptext{
+  width: 200px;
+  margin-left: -100px;
+}
+.widetooltiptext{
+  width: 500px;
   margin-left: -250px;
 }
 
@@ -102,6 +110,8 @@ padding:initial;
 {% block content %}
 
 {% macro span_for_sort(name) -%}
+{# This is simply to force the z score column to be able to formatted. The sort function seems to sort as a string. #}
+{# This seemed like the best way without changing the sort function #}
 <span style="display:none">{{(4+name)|round(1)}}</span>
 {%- endmacro %}
 
@@ -591,7 +601,7 @@ padding:initial;
 											<div><span class="ws-dark-green-fg mytooltip">Above Average
 											{% endif %}{% if scenario_category_avg_zscore[scenario][category] > 0.5 %}
 											<div class="ws-red-fg mytooltip">Below Average
-											{% endif %}<span class="mytooltiptext"><br />
+											{% endif %}<br /><span class="mytooltiptext narrowtooltiptext">
 												Average Z Score: {{scenario_category_avg_zscore[scenario][category]}}
 											</span>
 												</div></td>
@@ -633,8 +643,8 @@ padding:initial;
 											<div><span class="ws-dark-green-fg mytooltip">Above Average
 											{% endif %}{% if scenario_category_avg_zscore[scenario][category] > 0.5 %}
 											<div class="ws-red-fg mytooltip">Below Average
-											{% endif %}<span class="mytooltiptext">
-												<br />Average Z Score: {{scenario_category_avg_zscore[scenario][category]}}
+											{% endif %}<br /><span class="mytooltiptext narrowtooltiptext">
+												Average Z Score: {{scenario_category_avg_zscore[scenario][category]}}
 											</span>
 												</div></td>
 												</tr>
@@ -663,7 +673,7 @@ padding:initial;
 										<td class="text-center mytooltip">
 											<a href="{{ url_for("admin.challenges_detail", challenge_id=challenge['challenge_id']) }}">
 											{{challenge['name']}}</a></td>
-										<td class="text-center mytooltip"><span class="mytooltiptext">{{challenge['question']}}{%if challenge['correct_answers']%}<br />Correct answer(s): {{challenge['correct_answers']}}{% if challenge['hidden']%}<br />HIDDEN QUESTION{% endif %} {% endif %}</span>
+										<td class="text-center mytooltip"><span class="mytooltiptext widetooltiptext">{{challenge['question']}}{%if challenge['correct_answers']%}<br />Correct answer(s): {{challenge['correct_answers']}}{% if challenge['hidden']%}<br />HIDDEN QUESTION{% endif %} {% endif %}</span>
 											{% for submission in challenge['submissions']%}
 											<div{% if submission['correct'] %} style='font-weight: bold;'{% elif not challenge['missing'] %} style='font-weight: normal;'{% endif %}>{{submission['submission']}}</div>
 											{% endfor %}
@@ -677,12 +687,12 @@ padding:initial;
 											<div class="ws-red-fg mytooltip">Below Average
 											{% endif %}
 											<br />
-											<span class="mytooltiptext">
-												Z Score: {{challenge['zscore']}}
+											<span class="mytooltiptext narrowtooltiptext">
+												Z Score: {{challenge['zscore']|round(2)}}
 												<br />
-												Average: {{challenge['average']}}
+												Average: {{challenge['average']|round(2)}}
 												<br />
-												Standard Deviation: {{challenge['stdev']}}
+												Standard Deviation: {{challenge['stdev']|round(2)}}
 											</span>
 												</div>
 											{%endif%}
@@ -753,8 +763,8 @@ padding:initial;
 											<div><span class="ws-dark-green-fg mytooltip">Above Average
 											{% endif %}{% if category_avg_zscore[category] > 0.5 %}
 											<div class="ws-red-fg mytooltip">Below Average
-											{% endif %}<br /><span class="mytooltiptext">
-												Average Z Score: {{category_avg_zscore[category]|round(1)}}
+											{% endif %}<br /><span class="mytooltiptext narrowtooltiptext">
+												Average Z Score: {{category_avg_zscore[category]|round(2)}}
 											</span>
 												</div></td>
 									</tr>
@@ -795,8 +805,8 @@ padding:initial;
 											<div><span class="ws-dark-green-fg mytooltip">Above Average
 											{% endif %}{% if category_avg_zscore[category] > 0.5 %}
 											<div class="ws-red-fg mytooltip">Below Average
-											{% endif %}<span class="mytooltiptext"><br />
-												Average Z Score: {{category_avg_zscore[category]}}
+											{% endif %}<br /><span class="mytooltiptext narrowtooltiptext">
+												Average Z Score: {{category_avg_zscore[category]|round(2)}}
 											</span>
 												</div></td>
 									</tr>
